@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,6 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 import es.softtek.jwtDemo.dto.User;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+
+import javax.crypto.SecretKey;
 
 @RestController
 public class UserController {
@@ -29,10 +32,10 @@ public class UserController {
 	}
 
 	private String getJWTToken(String username) {
-		String secretKey = "mySecretKey";
+		String secretKey = "mySecretKeyWild-mySecretKeyWild-mySecretKeyWild-mySecretKeyWild-";
 		List<GrantedAuthority> grantedAuthorities = AuthorityUtils
 				.commaSeparatedStringToAuthorityList("ROLE_USER");
-		
+		SecretKey key = Keys.hmacShaKeyFor(secretKey.getBytes());
 		String token = Jwts
 				.builder()
 				.setId("softtekJWT")
@@ -43,8 +46,7 @@ public class UserController {
 								.collect(Collectors.toList()))
 				.setIssuedAt(new Date(System.currentTimeMillis()))
 				.setExpiration(new Date(System.currentTimeMillis() + 600000))
-				.signWith(SignatureAlgorithm.HS512,
-						secretKey.getBytes()).compact();
+				.signWith(key).compact();
 
 		return "Bearer " + token;
 	}
